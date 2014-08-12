@@ -1,0 +1,102 @@
+Для запуска на TE_STM32F107 нужно в файле stm32f107.c
+изменить адрес PHY на нужный 0х01F:
+
+#define PHY_ADDRESS       0x01F
+
+а также изменить функции
+
+void Ethernet_Configuration(void)
+void GPIO_Configuration(void)
+
+на такие:  // брались из файла D:\TBONE\Arm\TE_STM32F107\Disk\ECLIPSE_GCC\TE-STM32F107_uIP_demo\src\application\sysinit.c
+
+void Ethernet_Configuration(void)
+{
+	  ETH_InitTypeDef ETH_InitStructure;
+
+	  GPIO_ETH_MediaInterfaceConfig(GPIO_ETH_MediaInterface_MII);
+
+	  /* Reset ETHERNET on AHB Bus */
+	  ETH_DeInit();
+
+	  /* Software reset */
+	  ETH_SoftwareReset();
+
+	  /* Wait for software reset */
+	  while(ETH_GetSoftwareResetStatus()==SET);
+
+	  /* ETHERNET Configuration ------------------------------------------------------*/
+	  /* Call ETH_StructInit if you don't like to configure all ETH_InitStructure parameter */
+	  ETH_StructInit(&ETH_InitStructure);
+
+	  /* Fill ETH_InitStructure parametrs */
+	  /*------------------------   MAC   -----------------------------------*/
+	  ETH_InitStructure.ETH_AutoNegotiation = ETH_AutoNegotiation_Enable  ;
+	  //ETH_InitStructure.ETH_Speed = ETH_Speed_100M;
+	  ETH_InitStructure.ETH_LoopbackMode = ETH_LoopbackMode_Disable;
+	  //ETH_InitStructure.ETH_Mode = ETH_Mode_FullDuplex;
+	  ETH_InitStructure.ETH_RetryTransmission = ETH_RetryTransmission_Disable;
+	  ETH_InitStructure.ETH_AutomaticPadCRCStrip = ETH_AutomaticPadCRCStrip_Disable;
+	  ETH_InitStructure.ETH_ReceiveAll = ETH_ReceiveAll_Enable;
+	  ETH_InitStructure.ETH_BroadcastFramesReception = ETH_BroadcastFramesReception_Disable;
+	  ETH_InitStructure.ETH_PromiscuousMode = ETH_PromiscuousMode_Disable;
+	  ETH_InitStructure.ETH_MulticastFramesFilter = ETH_MulticastFramesFilter_Perfect;
+	  ETH_InitStructure.ETH_UnicastFramesFilter = ETH_UnicastFramesFilter_Perfect;
+	  /* Configure ETHERNET */
+	  ETH_Init(&ETH_InitStructure, PHY_ADDRESS);
+
+		ETH_DMAITConfig(ETH_DMA_IT_NIS | ETH_DMA_IT_R, ENABLE);
+}
+
+void GPIO_Configuration(void)
+{
+
+   //ETH_MII_CRS      PA0    Floating input (reset state)
+   //ETH_MII_COL      PA3    Floating input (reset state)
+   //ETH_MDIO MDIO    PA2    AF output push-pull highspeed(50 MHz)
+   //ETH_MDC          PC1    AF output push-pull highspeed(50 MHz)
+
+   //ETH_MII_TX_EN    PB11   AF output push-pull highspeed(50 MHz)
+   //ETH_MII_TXD0     PB12   AF output push-pull highspeed(50 MHz)
+   //ETH_MII_TXD1     PB13   AF output push-pull highspeed(50 MHz)
+   //ETH_MII_TXD2     PC2    AF output push-pull highspeed(50 MHz)
+   //ETH_MII_TXD3     PB8    AF output push-pull highspeed(50 MHz)
+   //ETH_MII_TX_CLK   PC3    Floating input (reset state)
+
+   //ETH_MII_RX_DV    PA7    Floating input (reset state)
+   //ETH_MII_RX_ER    PB10   Floating input (reset state)
+   //ETH_MII_RXD0     PC4    Floating input (reset state)
+   //ETH_MII_RXD1     PC5    Floating input (reset state)
+   //ETH_MII_RXD2     PB0    Floating input (reset state)
+   //ETH_MII_RXD3     PB1    Floating input (reset state)
+   //ETH_MII_RX_CLK   PA1    Floating input (reset state)
+
+  GPIO_InitTypeDef GPIO_InitStructure;
+
+  //GPIOA,AF,ppout,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_2;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  //GPIOB,AF,ppout,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_11 | GPIO_Pin_12 | GPIO_Pin_13;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  //GPIOC,AF,ppout,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_1 | GPIO_Pin_2;
+  GPIO_Init(GPIOC, &GPIO_InitStructure);
+
+  //GPIOA,float input,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_3 | GPIO_Pin_7;
+  GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
+  GPIO_Init(GPIOA, &GPIO_InitStructure);
+
+  //GPIOB,float input,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_1 | GPIO_Pin_10;
+  GPIO_Init(GPIOB, &GPIO_InitStructure);
+
+  //GPIOC,float input,50
+  GPIO_InitStructure.GPIO_Pin = GPIO_Pin_3 | GPIO_Pin_4 | GPIO_Pin_5 ;
+  GPIO_Init(GPIOC, &GPIO_InitStructure);
+}
