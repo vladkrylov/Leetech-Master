@@ -143,7 +143,7 @@ static err_t
 http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
 	uint32_t i;
-	uint8_t dir;
+	uint8_t action;
 	uint8_t motorID;
 	uint8_t steps2mm;
 	u16_t mes_length;
@@ -182,13 +182,13 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 					10*((uint8_t)data[15] - (uint8_t)'0') + 
 					1*((uint8_t)data[16] - (uint8_t)'0');
 			motorID = (uint8_t)data[10] - (uint8_t)'0';
-			dir = (uint8_t)data[17] - (uint8_t)'b';
+			action = (uint8_t)data[17];
 			steps2mm = (uint8_t)data[28] - (uint8_t)'0';
 			
 			test_can_mess[1] = i>>8;
 			test_can_mess[0] = i - (test_can_mess[1]<<8);
 			test_can_mess[2] = motorID;
-			test_can_mess[3] = dir;
+			test_can_mess[3] = action;
 			test_can_mess[4] = steps2mm;
 			
 			PhilCANSend(test_can_mess, 5);
