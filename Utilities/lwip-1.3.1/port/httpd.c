@@ -145,7 +145,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	uint32_t i;
 	uint8_t action;
 	uint8_t motorID;
-	uint8_t steps2mm;
+	uint8_t res;
 	u16_t mes_length;
 	char *data;
 	struct http_state *hs;
@@ -175,23 +175,23 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			hs->file = dataFromSlaveBoard;
 			hs->left = 8;
 			send_data(pcb, hs);
-		} else if (IsMoveCommandReceived(data)) {
-			i = 10000*((uint8_t)data[12] - (uint8_t)'0') + 
-					1000*((uint8_t)data[13] - (uint8_t)'0') + 
-					100*((uint8_t)data[14] - (uint8_t)'0') + 
-					10*((uint8_t)data[15] - (uint8_t)'0') + 
-					1*((uint8_t)data[16] - (uint8_t)'0');
-			motorID = (uint8_t)data[10] - (uint8_t)'0';
-			action = (uint8_t)data[17];
-			steps2mm = (uint8_t)data[28] - (uint8_t)'0';
+		} else if (!(WhatToDo(data, test_can_mess))) {
+//			i = 10000*((uint8_t)data[12] - (uint8_t)'0') + 
+//					1000*((uint8_t)data[13] - (uint8_t)'0') + 
+//					100*((uint8_t)data[14] - (uint8_t)'0') + 
+//					10*((uint8_t)data[15] - (uint8_t)'0') + 
+//					1*((uint8_t)data[16] - (uint8_t)'0');
+//			motorID = (uint8_t)data[10] - (uint8_t)'0';
+//			action = (uint8_t)data[17];
+//			steps2mm = (uint8_t)data[28] - (uint8_t)'0';
+//			
+//			test_can_mess[1] = i>>8;
+//			test_can_mess[0] = i - (test_can_mess[1]<<8);
+//			test_can_mess[2] = motorID;
+//			test_can_mess[3] = action;
+//			test_can_mess[4] = steps2mm;
 			
-			test_can_mess[1] = i>>8;
-			test_can_mess[0] = i - (test_can_mess[1]<<8);
-			test_can_mess[2] = motorID;
-			test_can_mess[3] = action;
-			test_can_mess[4] = steps2mm;
-			
-			PhilCANSend(test_can_mess, 5);
+			PhilCANSend(test_can_mess, 8);
 		}
 		GPIOB->ODR ^= GPIO_Pin_9;
 		
