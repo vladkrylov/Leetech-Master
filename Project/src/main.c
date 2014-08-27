@@ -25,6 +25,7 @@
 #include "helloworld.h"
 #include "httpd.h"
 #include "tftpserver.h"
+#include "phil_aux.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -61,7 +62,7 @@ int main(void)
 	GPIO_SetBits(GPIOB, GPIO_Pin_9);
 	
 	RS_Init();
-	//SerialPutString1(USART2, "Hello world!");
+//	SerialPutString(USART2, "Hello world!");
              
   /* Initilaize the LwIP satck */
   LwIP_Init();
@@ -160,7 +161,7 @@ void RS_Init(void)
         - Hardware flow control disabled (RTS and CTS signals)
         - Receive and transmit enabled
         */
-        USART_InitStructure.USART_BaudRate = 256000;
+        USART_InitStructure.USART_BaudRate = 128000;
         USART_InitStructure.USART_WordLength = USART_WordLength_8b;
         USART_InitStructure.USART_StopBits = USART_StopBits_1;
         USART_InitStructure.USART_Parity = USART_Parity_No;

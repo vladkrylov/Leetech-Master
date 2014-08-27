@@ -37,8 +37,7 @@
 void Time_Update(void);
 void Delay(uint32_t nCount);
 	 
-void SerialPutChar(USART_TypeDef* USARTx, uint8_t c);
-void SerialPutString(USART_TypeDef* USARTx, uint8_t *s);
+
 
 
 #ifdef __cplusplus

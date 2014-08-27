@@ -47,7 +47,7 @@
 #include "phil_aux.h"
 
 uint8_t dataFromSlaveBoardReceived;
-char dataFromSlaveBoard[8];
+char dataFromSlaveBoard[LENGTH_OF_RESPONSE] = "response_00000000";
 
 struct http_state
 {
@@ -173,7 +173,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			dataFromSlaveBoardReceived = 0;
 			
 			hs->file = dataFromSlaveBoard;
-			hs->left = 8;
+			hs->left = LENGTH_OF_RESPONSE;
 			send_data(pcb, hs);
 		} else if (!(WhatToDo(data, test_can_mess))) {
 //			i = 10000*((uint8_t)data[12] - (uint8_t)'0') + 
@@ -201,7 +201,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			close_conn(pcb, hs);
 		}
 	}
-	
+//	Delay(1000);
 	return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/

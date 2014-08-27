@@ -55,6 +55,7 @@
 #include "lwip/snmp.h"
 
 #include <string.h>
+#include "phil_aux.h"
 
 /* Forward declarations.*/
 static void tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb);
@@ -645,6 +646,8 @@ tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb)
   u16_t len;
   struct netif *netif;
   u32_t *opts;
+	u16_t i = 0;
+	char* ch;
 
   /** @bug Exclude retransmitted segments from this count. */
   snmp_inc_tcpoutsegs();
@@ -718,8 +721,8 @@ tcp_output_segment(struct tcp_seg *seg, struct tcp_pcb *pcb)
   ip_output_hinted(seg->p, &(pcb->local_ip), &(pcb->remote_ip), pcb->ttl, pcb->tos,
       IP_PROTO_TCP, &(pcb->addr_hint));
 #else /* LWIP_NETIF_HWADDRHINT*/
-  ip_output(seg->p, &(pcb->local_ip), &(pcb->remote_ip), pcb->ttl, pcb->tos,
-      IP_PROTO_TCP);
+		ip_output(seg->p, &(pcb->local_ip), &(pcb->remote_ip), pcb->ttl, pcb->tos,
+				IP_PROTO_TCP);
 #endif /* LWIP_NETIF_HWADDRHINT*/
 }
 

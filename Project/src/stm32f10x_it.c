@@ -246,10 +246,10 @@ void CAN2_RX0_IRQHandler(void)
   if ((RxMessage.StdId == 0x322)&&(RxMessage.IDE == CAN_ID_STD))
   {
 		for(i=0; i<8; i++) {
-			dataFromSlaveBoard[i] = 0;
+			dataFromSlaveBoard[9+i] = 0;
 		}
 		for(i=0; i<RxMessage.DLC; i++) {
-			dataFromSlaveBoard[i] = RxMessage.Data[i];
+			dataFromSlaveBoard[9+i] = RxMessage.Data[i];
 		}
 		dataFromSlaveBoardReceived = 1;
   }
