@@ -99,3 +99,11 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave)
 	}
 	return 0;
 }
+
+uint8_t SendCoordinateCommandReceived(const char *command)
+{
+	if (!strncmp(command, "Get_coordinate", 14)) {
+		return 1;
+	}
+	return 0;
+}
