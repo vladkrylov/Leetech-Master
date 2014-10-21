@@ -7,8 +7,8 @@ extern char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
 
 typedef enum {NOTHING, MOVE, RESET_ONE, RESET_ALL, GET_COORDINATE, TEST, TEST_OSCILLOSCOPE, SET_PULSES} commands_t;
 
-uint8_t WhatToDo(const char *command, char* phraseToSlave);
-uint16_t SearchValue(char* whereToFind, char* whatToFind);
+uint8_t WhatToDo(const char *command, char* phraseToSlave, uint16_t* setID);
+uint16_t SearchValue(const char* whereToFind, char* whatToFind);
 uint16_t AddDigit(uint16_t acc, char digit);
 
 uint8_t SendCoordinateCommandReceived(const char *command);

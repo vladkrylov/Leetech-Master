@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 
-uint8_t WhatToDo(const char *command, char* phraseToSlave, uint8_t* setID)
+uint8_t WhatToDo(const char *command, char* phraseToSlave, uint16_t* setID)
 {
 	uint8_t i;
 	uint16_t coord;
@@ -12,6 +12,8 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave, uint8_t* setID)
 	uint16_t newPulseWidth;
 	uint16_t newPulsePeriod;
 	uint8_t beginningOfData;
+	
+	*setID = SearchValue(command, "_setID=");
 	
 	if (!strncmp(command, "move_motor", 10)) {
 		phraseToSlave[3] = MOVE;
@@ -100,17 +102,18 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave, uint8_t* setID)
 	return 0;
 }
 
-uint16_t SearchValue(char* whereToFind, char* whatToFind)
+uint16_t SearchValue(const char* whereToFind, char* whatToFind)
 {
 	uint16_t i = 0;
+	uint16_t j = 0;
 	uint16_t res = 0;
+	char ch;
 	uint16_t keyLength = strlen(whatToFind);
 
 	while (whereToFind[i]) {
 		if (strncmp(whereToFind+i, whatToFind, keyLength) == 0) {
 			res = 0;
-			int j = 0;
-			char ch = whereToFind[i+keyLength + j];
+			ch = whereToFind[i+keyLength + j];
 			while (isdigit(ch)) {
 				res = AddDigit(res, ch);
 
@@ -123,7 +126,8 @@ uint16_t SearchValue(char* whereToFind, char* whatToFind)
 	return res;
 }
 
-uint16_t AddDigit(uint16_t acc, char digit) {
+uint16_t AddDigit(uint16_t acc, char digit) 
+{
 	return acc * 10 + (digit - '0');
 }
 

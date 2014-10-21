@@ -145,6 +145,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	uint32_t i;
 	uint8_t action;
 	uint8_t motorID;
+	uint16_t setID;
 	uint8_t res;
 	u16_t mes_length;
 	char *data;
@@ -175,8 +176,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			hs->file = dataFromSlaveBoard;
 			hs->left = LENGTH_OF_RESPONSE;
 			send_data(pcb, hs);
-		} else if (!(WhatToDo(data, test_can_mess))) {
-			PhilCANSend(test_can_mess, 8);
+		} else if (!(WhatToDo(data, test_can_mess, &setID))) {
+			PhilCANSend(setID, test_can_mess, 8);
 		}
 		GPIOB->ODR ^= GPIO_Pin_9;
 		
