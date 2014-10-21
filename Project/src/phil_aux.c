@@ -2,7 +2,7 @@
 #include <string.h>
 #include <ctype.h>
 
-uint8_t WhatToDo(const char *command, char* phraseToSlave)
+uint8_t WhatToDo(const char *command, char* phraseToSlave, uint8_t* setID)
 {
 	uint8_t i;
 	uint16_t coord;
@@ -67,9 +67,9 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave)
 	if (!strncmp(command, "set_pulses:", 11)) {
 		phraseToSlave[3] = SET_PULSES;
 		
-		// assumption that command is look like:
+		// assumption that command looks like:
 		// "set_pulses:w=123;T=456"
-		//  0123456789012345678901  <-- numering
+		//  0123456789012345678901  <-- indexes of string above
 		beginningOfData = 13;
 		newPulseWidth = 0;
 		i = 0;
@@ -100,10 +100,37 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave)
 	return 0;
 }
 
+uint16_t SearchValue(char* whereToFind, char* whatToFind)
+{
+	uint16_t i = 0;
+	uint16_t res = 0;
+	uint16_t keyLength = strlen(whatToFind);
+
+	while (whereToFind[i]) {
+		if (strncmp(whereToFind+i, whatToFind, keyLength) == 0) {
+			res = 0;
+			int j = 0;
+			char ch = whereToFind[i+keyLength + j];
+			while (isdigit(ch)) {
+				res = AddDigit(res, ch);
+
+				j++;
+				ch = whereToFind[i+keyLength + j];
+			}
+		}
+		i++;
+	}
+	return res;
+}
+
+uint16_t AddDigit(uint16_t acc, char digit) {
+	return acc * 10 + (digit - '0');
+}
+
 uint8_t SendCoordinateCommandReceived(const char *command)
 {
-	if (!strncmp(command, "Get_coordinate", 14)) {
+	if (!strncmp(command, "Get_coordinate", 14))
 		return 1;
-	}
-	return 0;
+	else
+		return 0;
 }

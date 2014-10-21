@@ -141,7 +141,7 @@ void Init_RxMes(CanRxMsg *RxMessage)
   }
 }
 
-void PhilCANSend(uint8_t* data, uint8_t length)
+void PhilCANSend(uint8_t setID, uint8_t* data, uint8_t length)
 {
 	uint8_t message_length;
 	uint8_t i;
@@ -152,6 +152,7 @@ void PhilCANSend(uint8_t* data, uint8_t length)
 		message_length = length;
 	}
 	
+	Phil_TxMessage.StdId = 0x321 + setID;
 	for (i=0; i<message_length; i++) {
 		Phil_TxMessage.Data[i] = data[i];
 	}

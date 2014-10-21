@@ -9,7 +9,7 @@ void CAN_Config(void);
 void LED_Display(uint8_t Ledstatus);
 void Init_RxMes(CanRxMsg *RxMessage);
 
-void PhilCANSend(uint8_t* data, uint8_t length);
+void PhilCANSend(uint8_t setID, uint8_t* data, uint8_t length);
 
 #endif /* __PHIL_CAN_FUNCTIONS_H */
 
