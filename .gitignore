@@ -20,3 +20,5 @@ Project/RVMDK/*.txt
 Project/RVMDK/*.ini
 Project/RVMDK/*.dep
 Project/RVMDK/Project.*
+
+!Project/RVMDK/Project.uvproj
