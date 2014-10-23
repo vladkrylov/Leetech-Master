@@ -243,7 +243,7 @@ void CAN2_RX0_IRQHandler(void)
 	uint8_t i;
 	uint8_t valid = 1;
   CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
-  if ((RxMessage.StdId == 0x322)&&(RxMessage.IDE == CAN_ID_STD))
+  if ((RxMessage.StdId == 0x122)&&(RxMessage.IDE == CAN_ID_STD))
   {
 		for(i=0; i<8; i++) {
 			dataFromSlaveBoard[9+i] = 0;
