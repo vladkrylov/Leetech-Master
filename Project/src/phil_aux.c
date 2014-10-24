@@ -90,6 +90,9 @@ uint8_t WhatToDo(const char *command, char* phraseToSlave, uint16_t* setID)
 			} else break;
 		}
 		
+		motorID = SearchValue(command, "_motorID=");
+		phraseToSlave[2] = motorID;
+		
 		phraseToSlave[5] = newPulseWidth >> 8;
 		phraseToSlave[4] = newPulseWidth - (phraseToSlave[5] << 8);
 		
