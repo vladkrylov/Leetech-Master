@@ -118,9 +118,9 @@ void LwIP_Init(void)
   }
 
 #else
-  IP4_ADDR(&ipaddr, 192, 168, 0, 8);
-  IP4_ADDR(&netmask, 255, 255, 255, 0);
-  IP4_ADDR(&gw, 192, 168, 0, 1);
+  IP4_ADDR(&ipaddr, 134, 158, 91, 38);
+  IP4_ADDR(&netmask, 255, 255, 252, 0);
+  IP4_ADDR(&gw, 134, 158, 88, 1);
 #endif
 
   Set_MAC_Address(macaddress);
@@ -315,9 +315,9 @@ void Display_Periodic_Handle(__IO uint32_t localtime)
 
         dhcp_stop(&netif);
 
-        IP4_ADDR(&ipaddr, 192, 168, 0, 8);
-        IP4_ADDR(&netmask, 255, 255, 255, 0);
-        IP4_ADDR(&gw, 192, 168, 0, 1);
+        IP4_ADDR(&ipaddr, 134, 158, 91, 38);
+        IP4_ADDR(&netmask, 255, 255, 252, 0);
+        IP4_ADDR(&gw, 134, 158, 88, 1);
 
         netif_set_addr(&netif, &ipaddr , &netmask, &gw);
 
