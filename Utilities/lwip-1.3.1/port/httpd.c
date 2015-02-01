@@ -46,15 +46,11 @@
 #include "phil_can_functions.h"
 #include "phil_aux.h"
 
-uint8_t dataFromSlaveBoardReceived;
-char dataFromSlaveBoard[LENGTH_OF_RESPONSE] = "response_00000000";
-
 struct http_state
 {
   char *file;
   u32_t left;
 };
-
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -80,27 +76,34 @@ close_conn(struct tcp_pcb *pcb, struct http_state *hs)
 static void
 send_data(struct tcp_pcb *pcb, struct http_state *hs)
 {
-  err_t err;
-  u16_t len;
+//  err_t err;
+//  u16_t len;
 
+	if (dataFromSlaveBoardReceived)
+	{
+		dataFromSlaveBoardReceived = 0;
+		tcp_write(pcb, dataFromSlaveBoard, LENGTH_OF_RESPONSE, 0);
+		tcp_output(pcb);
+	}
   /* We cannot send more data than space avaliable in the send
      buffer. */
-  if (tcp_sndbuf(pcb) < hs->left)
-  {
-    len = tcp_sndbuf(pcb);
-  }
-  else
-  {
-    len = hs->left;
-  }
+//  if (tcp_sndbuf(pcb) < hs->left)
+//  {
+//    len = tcp_sndbuf(pcb);
+//  }
+//  else
+//  {
+//    len = hs->left;
+//  }
+//	
 
-  err = tcp_write(pcb, hs->file, len, 0);
+//  err = tcp_write(pcb, hs->file, len, 0);
 
-  if (err == ERR_OK)
-  {
-    hs->file += len;
-    hs->left -= len;
-  }
+//  if (err == ERR_OK)
+//  {
+//    hs->file += len;
+//    hs->left -= len;
+//  }
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -151,6 +154,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 	char *data;
 	struct http_state *hs;
 	uint8_t test_can_mess[8];
+	uint32_t CANtransferCounter;
+	uint8_t* auxpointer;
 
   hs = arg;
 
@@ -163,20 +168,8 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
 		hs->file = data;
 		hs->left = mes_length;
-
-		//SerialPutString(USART2, data);
 		
-//		send_data(pcb, hs);
-//		tcp_sent(pcb, http_sent);
-		
-		if (dataFromSlaveBoardReceived && (SendCoordinateCommandReceived(data))) {
-			GPIOB->ODR ^= GPIO_Pin_9;
-			dataFromSlaveBoardReceived = 0;
-			
-			hs->file = dataFromSlaveBoard;
-			hs->left = LENGTH_OF_RESPONSE;
-			send_data(pcb, hs);
-		} else if (!(WhatToDo(data, test_can_mess, &setID))) {
+		if (!(WhatToDo(data, test_can_mess, &setID))) {
 			PhilCANSend(setID, test_can_mess, 8);
 		}
 		GPIOB->ODR ^= GPIO_Pin_9;
@@ -187,7 +180,6 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			close_conn(pcb, hs);
 		}
 	}
-//	Delay(1000);
 	return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -226,8 +218,7 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 void
 httpd_init(void)
 {
-  struct tcp_pcb *pcb;
-
+	struct tcp_pcb *pcb;
   pcb = tcp_new();
   tcp_bind(pcb, IP_ADDR_ANY, 80);
   pcb = tcp_listen(pcb);
@@ -252,3 +243,8 @@ fs_open(char *name, struct fs_file *file)
 }
 /*-----------------------------------------------------------------------------------*/
 
+void SendDataToComp(uint8_t *data, uint16_t len)
+{
+//	tcp_write(pcb, data, len, 0);
+//	tcp_output(pcb);
+}

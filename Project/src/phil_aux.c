@@ -2,7 +2,10 @@
 #include <string.h>
 #include <ctype.h>
 
-uint8_t WhatToDo(const char *command, char* phraseToSlave, uint16_t* setID)
+uint8_t dataFromSlaveBoardReceived;
+char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
+
+uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 {
 	uint8_t i;
 	uint16_t coord;
@@ -140,4 +143,14 @@ uint8_t SendCoordinateCommandReceived(const char *command)
 		return 1;
 	else
 		return 0;
+}
+
+// response array initialization
+void InitResponce(void)
+{
+	uint16_t i;
+	strcpy(dataFromSlaveBoard, "response_");
+	for(i=9; i<LENGTH_OF_RESPONSE; i++) {
+		dataFromSlaveBoard[i] = 0;
+	}
 }
