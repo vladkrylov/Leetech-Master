@@ -46,6 +46,9 @@
 #include "phil_can_functions.h"
 #include "phil_aux.h"
 
+#define TCP_PORT    4	/* define the TCP connection port */
+static struct tcp_pcb *CANTcpPCB;
+
 struct http_state
 {
   char *file;
@@ -171,6 +174,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 		
 		if (!(WhatToDo(data, test_can_mess, &setID))) {
 			PhilCANSend(setID, test_can_mess, 8);
+			CANTcpPCB = pcb;
 		}
 		GPIOB->ODR ^= GPIO_Pin_9;
 		
@@ -245,6 +249,6 @@ fs_open(char *name, struct fs_file *file)
 
 void SendDataToComp(uint8_t *data, uint16_t len)
 {
-//	tcp_write(pcb, data, len, 0);
-//	tcp_output(pcb);
+	tcp_write(CANTcpPCB, data, len, 0);
+	tcp_output(CANTcpPCB);
 }

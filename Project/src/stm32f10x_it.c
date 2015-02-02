@@ -188,7 +188,8 @@ void CAN2_RX0_IRQHandler(void)
 			dataFromSlaveBoard[9+i] = RxMessage.Data[i];
 		}
 		dataFromSlaveBoardReceived = 1;
-//		SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
+		tcp_led_control(1);
+		SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
   }
 }
 
