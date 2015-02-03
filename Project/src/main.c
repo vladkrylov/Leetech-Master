@@ -123,7 +123,7 @@ void System_Periodic_Handle(void)
 {
   /* Update the LCD display and the LEDs status */
   /* Manage the IP address setting */
-  Display_Periodic_Handle(LocalTime);
+//  Display_Periodic_Handle(LocalTime);
   
   /* LwIP periodic services are done here */
   LwIP_Periodic_Handle(LocalTime);

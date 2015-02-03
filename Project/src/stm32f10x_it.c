@@ -31,9 +31,11 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 CanRxMsg RxMessage;
+static can_flag FLAG = UNKNOWN;
+
+
 /* Private function prototypes -----------------------------------------------*/
 extern void LwIP_Pkt_Handle(void);
-extern void tcp_led_control(Led_TypeDef Led);
 
 
 /* Private functions ---------------------------------------------------------*/
@@ -165,9 +167,7 @@ void ETH_IRQHandler(void)
   * @retval None
   */
 void EXTI15_10_IRQHandler(void)
-{
-
-}
+{}
 
 /**
   * @brief  This function handles CAN2 Handler.
@@ -181,16 +181,33 @@ void CAN2_RX0_IRQHandler(void)
   CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
   if ((RxMessage.StdId == 0x122)&&(RxMessage.IDE == CAN_ID_STD))
   {
-		for(i=0; i<8; i++) {
-			dataFromSlaveBoard[9+i] = 0;
+		FLAG = GetTypeOfCANData(RxMessage.Data);
+		switch (FLAG) {
+			case FINISH:
+			case UNKNOWN:
+				break;
+			case SINGLE_COORDINALTE:
+				for(i=0; i<8; i++) {
+					dataFromSlaveBoard[9+i] = 0;
+				}
+				for(i=0; i<RxMessage.DLC; i++) {
+					dataFromSlaveBoard[9+i] = RxMessage.Data[i];
+				}
+				SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
+				break;
+			case TIME:
+				break;
+			case U_SIGNAL:
+				break;
+			case COOORDINATES:
+				break;
+			default:
+				FLAG = UNKNOWN;
 		}
-		for(i=0; i<RxMessage.DLC; i++) {
-			dataFromSlaveBoard[9+i] = RxMessage.Data[i];
-		}
-		dataFromSlaveBoardReceived = 1;
-		tcp_led_control(1);
-		SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
-  }
+		// AccumulateArray((uint8_t *)&RxMessage.Data)
+	}
+
+//  }
 }
 
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

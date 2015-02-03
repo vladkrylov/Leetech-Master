@@ -2,8 +2,12 @@
 #include <string.h>
 #include <ctype.h>
 
-uint8_t dataFromSlaveBoardReceived;
 char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
+
+const uint16_t sizeOfGlobalArrays = 200;
+uint16_t pulseValues[sizeOfGlobalArrays];
+uint16_t coordinates[sizeOfGlobalArrays];
+uint16_t times[sizeOfGlobalArrays];
 
 uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 {
@@ -154,3 +158,29 @@ void InitResponce(void)
 		dataFromSlaveBoard[i] = 0;
 	}
 }
+
+can_flag GetTypeOfCANData(uint8_t* RxMessageData)
+{
+	can_flag res = UNKNOWN;
+	uint8_t i = 0;
+	uint8_t j = 7;
+	for(i=SINGLE_COORDINALTE; i<=UNKNOWN; i++) {
+		if (RxMessageData[7] == i) {
+			res = i;
+			break;
+		}
+	}
+	
+	if (res == SINGLE_COORDINALTE) {
+		for(j=7; j>=5; j--) {
+			if (res != RxMessageData[j]) {
+				res = UNKNOWN;
+				break;
+			}
+		}
+	} else {
+		// Check for another flags
+	}
+	return res;
+}
+

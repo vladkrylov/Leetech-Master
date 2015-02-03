@@ -82,12 +82,6 @@ send_data(struct tcp_pcb *pcb, struct http_state *hs)
 //  err_t err;
 //  u16_t len;
 
-	if (dataFromSlaveBoardReceived)
-	{
-		dataFromSlaveBoardReceived = 0;
-		tcp_write(pcb, dataFromSlaveBoard, LENGTH_OF_RESPONSE, 0);
-		tcp_output(pcb);
-	}
   /* We cannot send more data than space avaliable in the send
      buffer. */
 //  if (tcp_sndbuf(pcb) < hs->left)
@@ -247,8 +241,16 @@ fs_open(char *name, struct fs_file *file)
 }
 /*-----------------------------------------------------------------------------------*/
 
-void SendDataToComp(uint8_t *data, uint16_t len)
+uint16_t SendDataToComp(uint8_t *data, uint16_t len)
 {
+  uint16_t lengthToSend = len;
+//  if (tcp_sndbuf(CANTcpPCB) < hs->left)
+//  {
+//    lengthToSend = tcp_sndbuf(CANTcpPCB);
+//  }
+
 	tcp_write(CANTcpPCB, data, len, 0);
 	tcp_output(CANTcpPCB);
+	
+	return lengthToSend;
 }
