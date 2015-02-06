@@ -4,45 +4,47 @@
 
 char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
 
-const uint16_t sizeOfGlobalArrays = 200;
-uint16_t pulseValues[sizeOfGlobalArrays];
-uint16_t coordinates[sizeOfGlobalArrays];
-uint16_t times[sizeOfGlobalArrays];
+const uint16_t sizeOfGlobalArrays = 2*500;
+
+uint8_t pulseValues[sizeOfGlobalArrays];
+uint8_t coordinates[sizeOfGlobalArrays];
+uint8_t times[sizeOfGlobalArrays];
+
+uint8_t TRAJ_RECEIVED = 0;
 
 uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 {
-	uint8_t i;
 	uint16_t coord;
 	uint8_t motorID;
 	uint8_t steps2mm;
 	
 	uint16_t newPulseWidth;
 	uint16_t newPulsePeriod;
-	uint8_t beginningOfData;
+	
+	uint8_t getTrajectory;
 	
 	*setID = SearchValue(command, "_setID=");
 	
 	if (!strncmp(command, "move_motor", 10)) {
 		phraseToSlave[3] = MOVE;
-				coord = 10000*((uint8_t)command[12] - (uint8_t)'0') + 
-				1000*((uint8_t)command[13] - (uint8_t)'0') + 
-				100*((uint8_t)command[14] - (uint8_t)'0') + 
-				10*((uint8_t)command[15] - (uint8_t)'0') + 
-				1*((uint8_t)command[16] - (uint8_t)'0');
-		motorID = (uint8_t)command[10] - (uint8_t)'0';
-		steps2mm = (uint8_t)command[28] - (uint8_t)'0';
+
+		motorID   		= SearchValue(command, "move_motor");
+		coord     		= SearchValue(command, "tocoord=");
+		steps2mm  		= SearchValue(command, "steps2mm=");
+		getTrajectory = SearchValue(command, "getTrajectory=");
 		
 		phraseToSlave[1] = coord>>8;
 		phraseToSlave[0] = coord - (phraseToSlave[1]<<8);
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
+		phraseToSlave[5] = getTrajectory;
 	}
 	else 
 	if (!strncmp(command, "getc_motor", 10)) {
 		phraseToSlave[3] = GET_COORDINATE;
 		
-		motorID = (uint8_t)command[10] - (uint8_t)'0';
-		steps2mm = (uint8_t)command[21] - (uint8_t)'0';
+		motorID   = SearchValue(command, "getc_motor");
+		steps2mm  = SearchValue(command, "steps2mm=");
 		
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
@@ -51,8 +53,8 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 	if (!strncmp(command, "reset_motor", 11)) {
 		phraseToSlave[3] = RESET_ONE;
 		
-		motorID = (uint8_t)command[11] - (uint8_t)'0';
-		steps2mm = (uint8_t)command[22] - (uint8_t)'0';
+		motorID   = SearchValue(command, "reset_motor");
+		steps2mm  = SearchValue(command, "steps2mm=");
 		
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
@@ -65,7 +67,8 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 	if (!strncmp(command, "test_motor", 10)) {
 		phraseToSlave[3] = TEST;
 		
-		motorID = (uint8_t)command[10] - (uint8_t)'0';
+		motorID   = SearchValue(command, "test_motor");
+		
 		phraseToSlave[2] = motorID;
 	}
 	else
@@ -76,28 +79,10 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 	if (!strncmp(command, "set_pulses:", 11)) {
 		phraseToSlave[3] = SET_PULSES;
 		
-		// assumption that command looks like:
-		// "set_pulses:w=123;T=456"
-		//  0123456789012345678901  <-- indexes of string above
-		beginningOfData = 13;
-		newPulseWidth = 0;
-		i = 0;
-		while (1) {
-			if (isdigit(command[beginningOfData+i])) {
-				newPulseWidth = newPulseWidth*10 + (uint8_t)command[beginningOfData+i] - (uint8_t)'0';
-				i++;
-			} else break;
-		}
+		motorID = SearchValue(command, "motorID=");
+		newPulseWidth = SearchValue(command, "w=");
+		newPulsePeriod = SearchValue(command, "T=");
 		
-		newPulsePeriod = 0;
-		while (1) {
-			if (isdigit(command[beginningOfData+i+3])) {
-				newPulsePeriod = newPulsePeriod*10 + (uint8_t)command[beginningOfData+i+3] - (uint8_t)'0';
-				i++;
-			} else break;
-		}
-		
-		motorID = SearchValue(command, "_motorID=");
 		phraseToSlave[2] = motorID;
 		
 		phraseToSlave[5] = newPulseWidth >> 8;
@@ -172,15 +157,67 @@ can_flag GetTypeOfCANData(uint8_t* RxMessageData)
 	}
 	
 	if (res == SINGLE_COORDINALTE) {
-		for(j=7; j>=5; j--) {
+		for(j=5; j<8; j++) {
 			if (res != RxMessageData[j]) {
 				res = UNKNOWN;
 				break;
 			}
 		}
 	} else {
-		// Check for another flags
+		for(j=5; j<8; j++) {
+			if (res != RxMessageData[j]) {
+				res = UNKNOWN;
+				break;
+			}
+		}
 	}
 	return res;
 }
+
+void AccumulateArray(can_flag f, uint8_t* RxMessageData)
+{
+	static uint16_t startIndex = 0;
+	uint8_t* array = 0;
+	uint16_t i = 0;
+	
+	switch (f) {
+		case FINISH:
+			startIndex = 0;
+			return;
+		case TIME:
+			if (startIndex == 0)
+				startIndex = TIME_START_INDEX;
+			array = times;
+			break;
+		case U_SIGNAL:
+			if (startIndex == 0)
+				startIndex = USIGNAL_START_INDEX;
+			array = pulseValues;
+			break;
+		case COOORDINATES:
+			if (startIndex == 0)
+				startIndex = COORDS_START_INDEX;
+			array = coordinates;
+			break;
+		default:
+			break;
+	}
+	
+	if (array != 0)
+		for(i=0; i<8; i++)
+			if (startIndex < sizeOfGlobalArrays)
+				array[startIndex++] = RxMessageData[i];	
+}
+
+
+void SendTrajectory(void)
+{
+	strcpy(times, "times");
+	strcpy(pulseValues, "usignal");
+	strcpy(coordinates, "coords");
+	SendTrajectoryToComp(times, pulseValues, coordinates, sizeOfGlobalArrays);
+}
+
+
+
 

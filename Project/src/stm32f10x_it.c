@@ -176,16 +176,32 @@ void EXTI15_10_IRQHandler(void)
   */
 void CAN2_RX0_IRQHandler(void)
 {
-	uint8_t i;
-	uint8_t valid = 1;
+	uint8_t i = 0;
+	can_flag newFlag = UNKNOWN;
+	
   CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
   if ((RxMessage.StdId == 0x122)&&(RxMessage.IDE == CAN_ID_STD))
   {
-		FLAG = GetTypeOfCANData(RxMessage.Data);
+		newFlag = GetTypeOfCANData(RxMessage.Data);
+		
+		if (newFlag == TRAJECTORY_TRANSMITTED) {
+			SendTrajectory();
+			return;
+		}
+
+		if (newFlag == FINISH) {
+			FLAG = newFlag;
+			AccumulateArray(FLAG, RxMessage.Data);
+			// exit and wait for new data
+			return;
+		}
+		
+		// if the actual flag means nothing get the new flag
+		if ((FLAG == FINISH) || (FLAG == UNKNOWN)) {
+			FLAG = newFlag;
+		}
+		
 		switch (FLAG) {
-			case FINISH:
-			case UNKNOWN:
-				break;
 			case SINGLE_COORDINALTE:
 				for(i=0; i<8; i++) {
 					dataFromSlaveBoard[9+i] = 0;
@@ -194,20 +210,26 @@ void CAN2_RX0_IRQHandler(void)
 					dataFromSlaveBoard[9+i] = RxMessage.Data[i];
 				}
 				SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
+				FLAG = FINISH;
+				break;
+			case TIME_START:
+				FLAG = TIME;
+				break;
+			case U_SIGNAL_START:
+				FLAG = U_SIGNAL;
+				break;
+			case COOORDINATES_START:
+				FLAG = COOORDINATES;
 				break;
 			case TIME:
-				break;
 			case U_SIGNAL:
-				break;
 			case COOORDINATES:
+				AccumulateArray(FLAG, RxMessage.Data);
 				break;
 			default:
 				FLAG = UNKNOWN;
 		}
-		// AccumulateArray((uint8_t *)&RxMessage.Data)
 	}
-
-//  }
 }
 
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

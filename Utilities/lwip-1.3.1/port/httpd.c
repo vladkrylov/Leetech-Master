@@ -142,17 +142,11 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 static err_t
 http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-	uint32_t i;
-	uint8_t action;
-	uint8_t motorID;
 	uint16_t setID;
-	uint8_t res;
 	u16_t mes_length;
 	char *data;
 	struct http_state *hs;
 	uint8_t test_can_mess[8];
-	uint32_t CANtransferCounter;
-	uint8_t* auxpointer;
 
   hs = arg;
 
@@ -253,4 +247,22 @@ uint16_t SendDataToComp(uint8_t *data, uint16_t len)
 	tcp_output(CANTcpPCB);
 	
 	return lengthToSend;
+}
+
+void SendTrajectoryToComp(uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len)
+{
+	tcp_write(CANTcpPCB, t, len, 0);
+//	tcp_output(CANTcpPCB);
+	
+	tcp_write(CANTcpPCB, u, len, 0);
+//	tcp_output(CANTcpPCB);
+	
+	tcp_write(CANTcpPCB, "coords", 6, 0);
+	tcp_write(CANTcpPCB, x, len, 0);
+	
+	tcp_output(CANTcpPCB);
+	tcp_output(CANTcpPCB);
+	tcp_output(CANTcpPCB);
+	tcp_output(CANTcpPCB);
+	tcp_output(CANTcpPCB);
 }
