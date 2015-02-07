@@ -6,9 +6,9 @@ char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
 
 const uint16_t sizeOfGlobalArrays = 2*500;
 
-uint8_t pulseValues[sizeOfGlobalArrays];
-uint8_t coordinates[sizeOfGlobalArrays];
-uint8_t times[sizeOfGlobalArrays];
+uint8_t pulseValues[sizeOfGlobalArrays + USIGNAL_START_INDEX];
+uint8_t coordinates[sizeOfGlobalArrays + COORDS_START_INDEX];
+uint8_t times[sizeOfGlobalArrays + TIME_START_INDEX];
 
 uint8_t TRAJ_RECEIVED = 0;
 

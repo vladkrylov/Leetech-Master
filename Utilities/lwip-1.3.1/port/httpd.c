@@ -249,20 +249,18 @@ uint16_t SendDataToComp(uint8_t *data, uint16_t len)
 	return lengthToSend;
 }
 
+/*-----------------------------------------------------------------------------------*/
 void SendTrajectoryToComp(uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len)
 {
-	tcp_write(CANTcpPCB, t, len, 0);
-//	tcp_output(CANTcpPCB);
+	tcp_write(CANTcpPCB, t, len + TIME_START_INDEX, 0);
+	tcp_write(CANTcpPCB, u, len + USIGNAL_START_INDEX, 0);
+	tcp_write(CANTcpPCB, x, len + COORDS_START_INDEX, 0);
 	
-	tcp_write(CANTcpPCB, u, len, 0);
-//	tcp_output(CANTcpPCB);
-	
-	tcp_write(CANTcpPCB, "coords", 6, 0);
-	tcp_write(CANTcpPCB, x, len, 0);
-	
-	tcp_output(CANTcpPCB);
-	tcp_output(CANTcpPCB);
-	tcp_output(CANTcpPCB);
-	tcp_output(CANTcpPCB);
 	tcp_output(CANTcpPCB);
 }
+/*-----------------------------------------------------------------------------------*/
+
+
+
+
+/*-----------------------------------------------------------------------------------*/
