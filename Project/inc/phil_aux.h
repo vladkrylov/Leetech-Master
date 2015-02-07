@@ -37,7 +37,9 @@ void InitResponce(void);
 /*-----------------------------------------------------------------------------------*/
 uint16_t SendDataToComp(uint8_t* message, uint16_t len);
 void SendTrajectory(void);
-void SendTrajectoryToComp(uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len);
+void SendTrajectoryToComp(uint8_t setID, uint8_t motorID,
+													uint16_t destination,
+													uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len);
 
 can_flag GetTypeOfCANData(uint8_t *RxMessageData);
 void AccumulateArray(can_flag f, uint8_t* RxMessageData);

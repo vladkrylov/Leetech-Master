@@ -10,7 +10,10 @@ uint8_t pulseValues[sizeOfGlobalArrays + USIGNAL_START_INDEX];
 uint8_t coordinates[sizeOfGlobalArrays + COORDS_START_INDEX];
 uint8_t times[sizeOfGlobalArrays + TIME_START_INDEX];
 
-uint8_t TRAJ_RECEIVED = 0;
+// trajectory parameters to be transmitted to comp
+static uint8_t GsetID;
+static uint8_t GmotorID;
+static uint16_t Gdestination;
 
 uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 {
@@ -38,6 +41,10 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
 		phraseToSlave[5] = getTrajectory;
+		
+		GsetID = *setID;
+		GmotorID = motorID;
+		Gdestination = coord;
 	}
 	else 
 	if (!strncmp(command, "getc_motor", 10)) {
@@ -215,7 +222,9 @@ void SendTrajectory(void)
 	strcpy(times, "times");
 	strcpy(pulseValues, "usignal");
 	strcpy(coordinates, "coords");
-	SendTrajectoryToComp(times, pulseValues, coordinates, sizeOfGlobalArrays);
+	SendTrajectoryToComp(GsetID, GmotorID, 
+											 Gdestination,
+											 times,	pulseValues, coordinates, sizeOfGlobalArrays);
 }
 
 
