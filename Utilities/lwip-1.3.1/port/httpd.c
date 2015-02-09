@@ -254,29 +254,29 @@ void SendTrajectoryToComp(uint8_t setID, uint8_t motorID,
 													uint16_t destination,
 													uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len)
 {
-	char strSet[8];
-	char strMotor[10];
-	char strDest[7];
+	char strSet[9];
+	char strMotor[11];
+	char strDest[8];
 	
 	// Send information about motor
 	strcpy(strSet, "set_id=");
-	strSet[7] = (char)setID;
-	tcp_write(CANTcpPCB, strSet, 8, 0);
+	strSet[8] = (char)setID;
+	tcp_write(CANTcpPCB, strSet, 9, 0);
 	
 	strcpy(strMotor, "motor_id=");
-	strMotor[9] = (char)motorID;
-	tcp_write(CANTcpPCB, strMotor, 10, 0);
+	strMotor[10] = (char)motorID;
+	tcp_write(CANTcpPCB, strMotor, 11, 0);
 	
 	// some additional information
 	strcpy(strDest, "dest=");
-	strDest[5] = (char)(destination >> 8);
-	strDest[6] = (char)(destination & 0xFF);
-	tcp_write(CANTcpPCB, strDest, 7, 0);
+	strDest[6] = (char)(destination >> 8);
+	strDest[7] = (char)(destination & 0xFF);
+	tcp_write(CANTcpPCB, strDest, 8, 0);
 	
 //	strcpy(str, "prec=");
 //	str[5] = (char)(precision >> 8);
 //	str[6] = (char)(precision & 0xFF);
-//	tcp_write(CANTcpPCB, str, 7, 0);
+//	tcp_write(CANTcpPCB, str, 8, 0);
 	
 	// and the trajectory arrays
 	tcp_write(CANTcpPCB, t, len + TIME_START_INDEX, 0);

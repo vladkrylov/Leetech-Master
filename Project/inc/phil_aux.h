@@ -1,8 +1,8 @@
 #include "stm32f10x.h"
 
-#define TIME_START_INDEX 5
-#define USIGNAL_START_INDEX 7
-#define COORDS_START_INDEX 6
+#define TIME_START_INDEX 5+1
+#define USIGNAL_START_INDEX 7+1
+#define COORDS_START_INDEX 6+1
 
 static const uint16_t LENGTH_OF_RESPONSE = 30;
 
