@@ -203,12 +203,7 @@ void CAN2_RX0_IRQHandler(void)
 		
 		switch (FLAG) {
 			case SINGLE_COORDINALTE:
-				for(i=0; i<8; i++) {
-					dataFromSlaveBoard[9+i] = 0;
-				}
-				for(i=0; i<RxMessage.DLC; i++) {
-					dataFromSlaveBoard[9+i] = RxMessage.Data[i];
-				}
+				WriteResponce(RxMessage.Data);
 				SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
 				FLAG = FINISH;
 				break;

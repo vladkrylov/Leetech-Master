@@ -55,6 +55,9 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 		
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
+		
+		GsetID = *setID;
+		GmotorID = motorID;
 	}
 	else
 	if (!strncmp(command, "reset_motor", 11)) {
@@ -65,6 +68,9 @@ uint8_t WhatToDo(const char *command, uint8_t* phraseToSlave, uint16_t* setID)
 		
 		phraseToSlave[2] = motorID;
 		phraseToSlave[4] = steps2mm;
+		
+		GsetID = *setID;
+		GmotorID = motorID;
 	}
 	else 
 	if (!strncmp(command, "reset_all", 9)) {
@@ -144,11 +150,26 @@ uint8_t SendCoordinateCommandReceived(const char *command)
 // response array initialization
 void InitResponce(void)
 {
-	uint16_t i;
-	strcpy(dataFromSlaveBoard, "response_");
-	for(i=9; i<LENGTH_OF_RESPONSE; i++) {
-		dataFromSlaveBoard[i] = 0;
-	}
+	strcpy(dataFromSlaveBoard, "response_set_id=0;motor_id=0;coord=00000");
+}
+
+void WriteResponce(uint8_t* RxMessageData)
+{
+	uint8_t i = 0;
+	uint8_t indexOfTail = 37;
+	
+	dataFromSlaveBoard[16] = GsetID;
+	dataFromSlaveBoard[27] = GmotorID;
+	dataFromSlaveBoard[35] = RxMessageData[0];
+	dataFromSlaveBoard[36] = RxMessageData[1];
+	
+	// check if we have received data after reset
+	// and write the information to tail of message
+	if (RxMessageData[4])
+		strcpy(&dataFromSlaveBoard[indexOfTail], "reset");
+	else
+		for(i=indexOfTail; i<LENGTH_OF_RESPONSE; i++)
+			dataFromSlaveBoard[i] = 0;
 }
 
 can_flag GetTypeOfCANData(uint8_t* RxMessageData)

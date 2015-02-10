@@ -4,7 +4,7 @@
 #define USIGNAL_START_INDEX 7+1
 #define COORDS_START_INDEX 6+1
 
-static const uint16_t LENGTH_OF_RESPONSE = 30;
+static const uint16_t LENGTH_OF_RESPONSE = 50;
 
 extern uint8_t dataFromSlaveBoardReceived;
 extern char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
@@ -33,6 +33,7 @@ void SerialPutChar(USART_TypeDef* USARTx, uint8_t c);
 void SerialPutString(USART_TypeDef* USARTx, uint8_t *s);
 
 void InitResponce(void);
+void WriteResponce(uint8_t* RxMessageData);
 
 /*-----------------------------------------------------------------------------------*/
 uint16_t SendDataToComp(uint8_t* message, uint16_t len);
