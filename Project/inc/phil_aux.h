@@ -44,4 +44,5 @@ void SendTrajectoryToComp(uint8_t setID, uint8_t motorID,
 
 can_flag GetTypeOfCANData(uint8_t *RxMessageData);
 void AccumulateArray(can_flag f, uint8_t* RxMessageData);
+void ResetTrajectoryData(void);
 

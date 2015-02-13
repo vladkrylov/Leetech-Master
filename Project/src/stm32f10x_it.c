@@ -208,12 +208,15 @@ void CAN2_RX0_IRQHandler(void)
 				FLAG = FINISH;
 				break;
 			case TIME_START:
+				ResetTrajectoryData();
 				FLAG = TIME;
 				break;
 			case U_SIGNAL_START:
+				ResetTrajectoryData();
 				FLAG = U_SIGNAL;
 				break;
 			case COOORDINATES_START:
+				ResetTrajectoryData();
 				FLAG = COOORDINATES;
 				break;
 			case TIME:

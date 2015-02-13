@@ -4,7 +4,7 @@
 
 char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
 
-const uint16_t sizeOfGlobalArrays = 2*500;
+const uint16_t sizeOfGlobalArrays = 2*1000;
 
 uint8_t pulseValues[sizeOfGlobalArrays + USIGNAL_START_INDEX];
 uint8_t coordinates[sizeOfGlobalArrays + COORDS_START_INDEX];
@@ -247,6 +247,27 @@ void SendTrajectory(void)
 											 Gdestination,
 											 times,	pulseValues, coordinates, sizeOfGlobalArrays);
 }
+
+
+
+
+
+void ResetTrajectoryData(void)
+{
+	uint16_t i = 0;
+	for(i=TIME_START_INDEX; i<sizeOfGlobalArrays + TIME_START_INDEX;i++) {
+		times[i] = 0;
+	}
+	
+	for(i=COORDS_START_INDEX; i<sizeOfGlobalArrays + COORDS_START_INDEX;i++) {
+		coordinates[i] = 0;
+	}
+	
+	for(i=USIGNAL_START_INDEX; i<sizeOfGlobalArrays + USIGNAL_START_INDEX;i++) {
+		pulseValues[i] = 0;
+	}
+}
+
 
 
 
