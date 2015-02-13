@@ -246,6 +246,8 @@ uint16_t SendDataToComp(uint8_t *data, uint16_t len)
 	tcp_write(CANTcpPCB, data, len, 0);
 	tcp_output(CANTcpPCB);
 	
+	ResetTrajectoryData();
+	
 	return lengthToSend;
 }
 
