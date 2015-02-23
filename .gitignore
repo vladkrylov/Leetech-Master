@@ -11,6 +11,8 @@ _htmresc/
 *.html
 *.chm
 
+Project/RVMDK/List/*.map
+
 Project/EWARMv5
 Project/HiTOP
 Project/RIDE

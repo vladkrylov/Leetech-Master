@@ -48,6 +48,7 @@
 
 #define TCP_PORT    4	/* define the TCP connection port */
 static struct tcp_pcb *CANTcpPCB;
+char *testmsg = 0;
 
 struct http_state
 {
@@ -160,6 +161,7 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 		hs->file = data;
 		hs->left = mes_length;
 		
+		testmsg = data;
 		if (!(WhatToDo(data, test_can_mess, &setID))) {
 			PhilCANSend(setID, test_can_mess, 8);
 			CANTcpPCB = pcb;

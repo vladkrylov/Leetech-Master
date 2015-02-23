@@ -10,6 +10,8 @@ extern uint8_t dataFromSlaveBoardReceived;
 extern char dataFromSlaveBoard[LENGTH_OF_RESPONSE];
 extern uint8_t TRAJ_RECEIVED;
 
+extern char *testmsg;
+
 typedef enum {NOTHING, MOVE, RESET_ONE, RESET_ALL, GET_COORDINATE, TEST, TEST_OSCILLOSCOPE, SET_PULSES} commands_t;
 typedef enum {SINGLE_COORDINALTE = 8,
 							TIME_START,

@@ -124,10 +124,11 @@ uint16_t SearchValue(const char* whereToFind, char* whatToFind)
 			ch = whereToFind[i+keyLength + j];
 			while (isdigit(ch)) {
 				res = AddDigit(res, ch);
-
+				
 				j++;
 				ch = whereToFind[i+keyLength + j];
 			}
+			break;
 		}
 		i++;
 	}
