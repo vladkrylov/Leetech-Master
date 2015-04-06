@@ -31,9 +31,11 @@
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
 CanRxMsg RxMessage;
+static can_flag FLAG = UNKNOWN;
+
+
 /* Private function prototypes -----------------------------------------------*/
 extern void LwIP_Pkt_Handle(void);
-extern void tcp_led_control(Led_TypeDef Led);
 
 
 /* Private functions ---------------------------------------------------------*/
@@ -165,73 +167,7 @@ void ETH_IRQHandler(void)
   * @retval None
   */
 void EXTI15_10_IRQHandler(void)
-{
-
-  if(EXTI_GetITStatus(EXTI_LINE_IOE_ITLINE) != RESET)
-  {   
-    static TS_STATE* TS_State;
-    
-    /* Check if the interrupt source is the Touch Screen */
-    if (IOE_GetGITStatus(IOE_1_ADDR, IOE_TS_IT) & IOE_TS_IT)
-    {
-      /* Update the structure with the current position */
-      TS_State = IOE_TS_GetState();  
-      
-      if ((TS_State->TouchDetected) && (TS_State->Y < 220) && (TS_State->Y > 180))
-      {
-        if ((TS_State->X > 10) && (TS_State->X < 70))
-        {
-          LCD_DisplayStringLine(Line6, " LD4                ");          
-		  STM_EVAL_LEDOn(LED4);
-		  
-		  /* Send out a TCP packet to toggle the server's led4 */
-		  tcp_led_control(LED4);
-        }
-        else if ((TS_State->X > 90) && (TS_State->X < 150))
-        {
-          LCD_DisplayStringLine(Line6, "      LD3           ");
-          STM_EVAL_LEDOn(LED3);
-		  
-		  /* Send out a TCP packet to toggle the server's led3 */
-		  tcp_led_control(LED3);
-        }
-        else if ((TS_State->X > 170) && (TS_State->X < 230))
-        {
-          LCD_DisplayStringLine(Line6, "           LD2      ");
-          STM_EVAL_LEDOn(LED2);
-		  
-		  /* Send out a TCP packet to toggle the server's led2 */
-		  tcp_led_control(LED2);
-        }     
-        else if ((TS_State->X > 250) && (TS_State->X < 310))
-        {
-          LCD_DisplayStringLine(Line6, "                LD1 ");
-          STM_EVAL_LEDOn(LED1);
-		  
-		  /* Send out a TCP packet to toggle the server's led1 */
-		  tcp_led_control(LED1);
-        }
-      }
-      else
-      {
-        STM_EVAL_LEDOff(LED1);
-        STM_EVAL_LEDOff(LED2);
-        STM_EVAL_LEDOff(LED3);
-        STM_EVAL_LEDOff(LED4);
-      }    
-      
-      /* Clear the interrupt pending bits */    
-      IOE_ClearGITPending(IOE_1_ADDR, IOE_TS_IT);      
-    }
-    else
-    {
-      IOE_ClearGITPending(IOE_1_ADDR, ALL_IT);
-      IOE_ClearGITPending(IOE_2_ADDR, ALL_IT);
-    }
-    
-    EXTI_ClearITPendingBit(EXTI_LINE_IOE_ITLINE);
-  }  
-}
+{}
 
 /**
   * @brief  This function handles CAN2 Handler.
@@ -240,19 +176,58 @@ void EXTI15_10_IRQHandler(void)
   */
 void CAN2_RX0_IRQHandler(void)
 {
-	uint8_t i;
-	uint8_t valid = 1;
+	uint8_t i = 0;
+	can_flag newFlag = UNKNOWN;
+	
   CAN_Receive(CAN2, CAN_FIFO0, &RxMessage);
   if ((RxMessage.StdId == 0x122)&&(RxMessage.IDE == CAN_ID_STD))
   {
-		for(i=0; i<8; i++) {
-			dataFromSlaveBoard[9+i] = 0;
+		newFlag = GetTypeOfCANData(RxMessage.Data);
+		
+		if (newFlag == TRAJECTORY_TRANSMITTED) {
+			SendTrajectory();
+			return;
 		}
-		for(i=0; i<RxMessage.DLC; i++) {
-			dataFromSlaveBoard[9+i] = RxMessage.Data[i];
+
+		if (newFlag == FINISH) {
+			FLAG = newFlag;
+			AccumulateArray(FLAG, RxMessage.Data);
+			// exit and wait for new data
+			return;
 		}
-		dataFromSlaveBoardReceived = 1;
-  }
+		
+		// if the actual flag means nothing get the new flag
+		if ((FLAG == FINISH) || (FLAG == UNKNOWN)) {
+			FLAG = newFlag;
+		}
+		
+		switch (FLAG) {
+			case SINGLE_COORDINALTE:
+				WriteResponce(RxMessage.Data);
+				SendDataToComp((uint8_t *)dataFromSlaveBoard, LENGTH_OF_RESPONSE);
+				FLAG = FINISH;
+				break;
+			case TIME_START:
+//				ResetTrajectoryData();
+				FLAG = TIME;
+				break;
+			case U_SIGNAL_START:
+//				ResetTrajectoryData();
+				FLAG = U_SIGNAL;
+				break;
+			case COOORDINATES_START:
+//				ResetTrajectoryData();
+				FLAG = COOORDINATES;
+				break;
+			case TIME:
+			case U_SIGNAL:
+			case COOORDINATES:
+				AccumulateArray(FLAG, RxMessage.Data);
+				break;
+			default:
+				FLAG = UNKNOWN;
+		}
+	}
 }
 
 /******************* (C) COPYRIGHT 2009 STMicroelectronics *****END OF FILE****/

@@ -46,15 +46,15 @@
 #include "phil_can_functions.h"
 #include "phil_aux.h"
 
-uint8_t dataFromSlaveBoardReceived;
-char dataFromSlaveBoard[LENGTH_OF_RESPONSE] = "response_00000000";
+#define TCP_PORT    4	/* define the TCP connection port */
+static struct tcp_pcb *CANTcpPCB;
+char *testmsg = 0;
 
 struct http_state
 {
   char *file;
   u32_t left;
 };
-
 
 /*-----------------------------------------------------------------------------------*/
 static void
@@ -80,27 +80,28 @@ close_conn(struct tcp_pcb *pcb, struct http_state *hs)
 static void
 send_data(struct tcp_pcb *pcb, struct http_state *hs)
 {
-  err_t err;
-  u16_t len;
+//  err_t err;
+//  u16_t len;
 
   /* We cannot send more data than space avaliable in the send
      buffer. */
-  if (tcp_sndbuf(pcb) < hs->left)
-  {
-    len = tcp_sndbuf(pcb);
-  }
-  else
-  {
-    len = hs->left;
-  }
+//  if (tcp_sndbuf(pcb) < hs->left)
+//  {
+//    len = tcp_sndbuf(pcb);
+//  }
+//  else
+//  {
+//    len = hs->left;
+//  }
+//	
 
-  err = tcp_write(pcb, hs->file, len, 0);
+//  err = tcp_write(pcb, hs->file, len, 0);
 
-  if (err == ERR_OK)
-  {
-    hs->file += len;
-    hs->left -= len;
-  }
+//  if (err == ERR_OK)
+//  {
+//    hs->file += len;
+//    hs->left -= len;
+//  }
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -142,11 +143,7 @@ http_sent(void *arg, struct tcp_pcb *pcb, u16_t len)
 static err_t
 http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 {
-	uint32_t i;
-	uint8_t action;
-	uint8_t motorID;
 	uint16_t setID;
-	uint8_t res;
 	u16_t mes_length;
 	char *data;
 	struct http_state *hs;
@@ -163,21 +160,11 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 
 		hs->file = data;
 		hs->left = mes_length;
-
-		//SerialPutString(USART2, data);
 		
-//		send_data(pcb, hs);
-//		tcp_sent(pcb, http_sent);
-		
-		if (dataFromSlaveBoardReceived && (SendCoordinateCommandReceived(data))) {
-			GPIOB->ODR ^= GPIO_Pin_9;
-			dataFromSlaveBoardReceived = 0;
-			
-			hs->file = dataFromSlaveBoard;
-			hs->left = LENGTH_OF_RESPONSE;
-			send_data(pcb, hs);
-		} else if (!(WhatToDo(data, test_can_mess, &setID))) {
+		testmsg = data;
+		if (!(WhatToDo(data, test_can_mess, &setID))) {
 			PhilCANSend(setID, test_can_mess, 8);
+			CANTcpPCB = pcb;
 		}
 		GPIOB->ODR ^= GPIO_Pin_9;
 		
@@ -187,7 +174,6 @@ http_recv(void *arg, struct tcp_pcb *pcb, struct pbuf *p, err_t err)
 			close_conn(pcb, hs);
 		}
 	}
-//	Delay(1000);
 	return ERR_OK;
 }
 /*-----------------------------------------------------------------------------------*/
@@ -226,8 +212,7 @@ http_accept(void *arg, struct tcp_pcb *pcb, err_t err)
 void
 httpd_init(void)
 {
-  struct tcp_pcb *pcb;
-
+	struct tcp_pcb *pcb;
   pcb = tcp_new();
   tcp_bind(pcb, IP_ADDR_ANY, 80);
   pcb = tcp_listen(pcb);
@@ -252,3 +237,61 @@ fs_open(char *name, struct fs_file *file)
 }
 /*-----------------------------------------------------------------------------------*/
 
+uint16_t SendDataToComp(uint8_t *data, uint16_t len)
+{
+  uint16_t lengthToSend = len;
+//  if (tcp_sndbuf(CANTcpPCB) < hs->left)
+//  {
+//    lengthToSend = tcp_sndbuf(CANTcpPCB);
+//  }
+
+	tcp_write(CANTcpPCB, data, len, 0);
+	tcp_output(CANTcpPCB);
+	
+	ResetTrajectoryData();
+	
+	return lengthToSend;
+}
+
+/*-----------------------------------------------------------------------------------*/
+void SendTrajectoryToComp(uint8_t setID, uint8_t motorID,
+													uint16_t destination,
+													uint8_t *t, uint8_t *u, uint8_t *x, uint16_t len)
+{
+	char strSet[9];
+	char strMotor[11];
+	char strDest[8];
+	
+	// Send information about motor
+	strcpy(strSet, "set_id=");
+	strSet[8] = (char)setID;
+	tcp_write(CANTcpPCB, strSet, 9, 0);
+	
+	strcpy(strMotor, "motor_id=");
+	strMotor[10] = (char)motorID;
+	tcp_write(CANTcpPCB, strMotor, 11, 0);
+	
+	// some additional information
+	strcpy(strDest, "dest=");
+	strDest[6] = (char)(destination >> 8);
+	strDest[7] = (char)(destination & 0xFF);
+	tcp_write(CANTcpPCB, strDest, 8, 0);
+	
+//	strcpy(str, "prec=");
+//	str[5] = (char)(precision >> 8);
+//	str[6] = (char)(precision & 0xFF);
+//	tcp_write(CANTcpPCB, str, 8, 0);
+	
+	// and the trajectory arrays
+	tcp_write(CANTcpPCB, t, len + TIME_START_INDEX, 0);
+	tcp_write(CANTcpPCB, u, len + USIGNAL_START_INDEX, 0);
+	tcp_write(CANTcpPCB, x, len + COORDS_START_INDEX, 0);
+	
+	tcp_output(CANTcpPCB);
+}
+/*-----------------------------------------------------------------------------------*/
+
+
+
+
+/*-----------------------------------------------------------------------------------*/

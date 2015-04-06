@@ -42,6 +42,7 @@ void RS_Init(void);
 
 /* Private functions ---------------------------------------------------------*/
 
+
 /**
   * @brief  Main program.
   * @param  None
@@ -72,8 +73,10 @@ int main(void)
 
   /* Initilaize the webserver module */
   httpd_init();
+	
+	InitResponce();
 
-	STM_EVAL_LEDToggle(LED1);
+//	STM_EVAL_LEDToggle(LED1);
 //	SerialPutString(USART2, "123");
 
   /* Infinite loop */
@@ -120,7 +123,7 @@ void System_Periodic_Handle(void)
 {
   /* Update the LCD display and the LEDs status */
   /* Manage the IP address setting */
-  Display_Periodic_Handle(LocalTime);
+//  Display_Periodic_Handle(LocalTime);
   
   /* LwIP periodic services are done here */
   LwIP_Periodic_Handle(LocalTime);

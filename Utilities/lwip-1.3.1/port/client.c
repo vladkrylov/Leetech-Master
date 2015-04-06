@@ -154,9 +154,9 @@ err_t tcp_client_connected(void *arg, struct tcp_pcb *tpcb, err_t err)
   */
 void tcp_led_control(Led_TypeDef Led)
 {
-  char ledstatus;
+  char ledstatus = 'x';
 
-  ledstatus = (char) Led;
+//  ledstatus = (char) Led;
   
   tcp_write(TcpPCB, &ledstatus, sizeof(ledstatus), 1);
 
